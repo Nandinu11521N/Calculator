@@ -28,11 +28,14 @@ function updateDisplay(value) {
 function calculate() {
     var expression = document.getElementById("result").value;
     var result;
-    try {
-        result = eval(expression);
+    
+    result = eval(expression);
+    
+    if (!isNaN(result)) {
         document.getElementById("result").value = result;
-    } catch (error) {
+    } else {
         document.getElementById("result").value = "Error";
     }
 }
+
 
