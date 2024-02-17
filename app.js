@@ -29,18 +29,15 @@ function calculate() {
     var expression = document.getElementById("result").value;
     var result;
 
-    // Regular expression to match numbers, operators, and parentheses
     var regex = /(\d+\.?\d*)|([+\-*/()])/g;
     var tokens = expression.match(regex);
 
-    // Check if expression is valid
     if (!tokens || tokens.length === 0) {
         document.getElementById("result").value = "Error";
         return;
     }
 
     try {
-        // Convert infix expression to postfix (RPN) using Shunting Yard algorithm
         var outputQueue = [];
         var operatorStack = [];
         var precedence = { '+': 1, '-': 1, '*': 2, '/': 2 };
@@ -73,7 +70,6 @@ function calculate() {
             outputQueue.push(operatorStack.pop());
         }
 
-        // Evaluate postfix expression
         var stack = [];
         outputQueue.forEach(function(token) {
             if (token.match(/\d+/)) {
