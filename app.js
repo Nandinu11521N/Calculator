@@ -28,14 +28,94 @@ function updateDisplay(value) {
 function calculate() {
     var expression = document.getElementById("result").value;
     var result;
-    
-    result = eval(expression);
-    
-    if (!isNaN(result)) {
+
+    // Regular expression to match numbers, operators, and parentheses
+    var regex = /(\d+\.?\d*)|([+\-*/()])/g;
+    var tokens = expression.match(regex);
+
+    // Check if expression is valid
+    if (!tokens || tokens.length === 0) {
+        document.getElementById("result").value = "Error";
+        return;
+    }
+
+    try {
+        // Convert infix expression to postfix (RPN) using Shunting Yard algorithm
+        var outputQueue = [];
+        var operatorStack = [];
+        var precedence = { '+': 1, '-': 1, '*': 2, '/': 2 };
+
+        tokens.forEach(function(token) {
+            if (token.match(/\d+/)) {
+                outputQueue.push(token);
+            } else if (token === '(') {
+                operatorStack.push(token);
+            } else if (token === ')') {
+                while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') {
+                    outputQueue.push(operatorStack.pop());
+                }
+                if (operatorStack.length === 0) {
+                    throw "Mismatched parentheses";
+                }
+                operatorStack.pop();
+            } else {
+                while (operatorStack.length > 0 && precedence[token] <= precedence[operatorStack[operatorStack.length - 1]]) {
+                    outputQueue.push(operatorStack.pop());
+                }
+                operatorStack.push(token);
+            }
+        });
+
+        while (operatorStack.length > 0) {
+            if (operatorStack[operatorStack.length - 1] === '(' || operatorStack[operatorStack.length - 1] === ')') {
+                throw "Mismatched parentheses";
+            }
+            outputQueue.push(operatorStack.pop());
+        }
+
+        // Evaluate postfix expression
+        var stack = [];
+        outputQueue.forEach(function(token) {
+            if (token.match(/\d+/)) {
+                stack.push(parseFloat(token));
+            } else {
+                if (stack.length < 2) {
+                    throw "Invalid expression";
+                }
+                var b = stack.pop();
+                var a = stack.pop();
+                switch (token) {
+                    case '+':
+                        stack.push(a + b);
+                        break;
+                    case '-':
+                        stack.push(a - b);
+                        break;
+                    case '*':
+                        stack.push(a * b);
+                        break;
+                    case '/':
+                        if (b === 0) {
+                            throw "Division by zero";
+                        }
+                        stack.push(a / b);
+                        break;
+                    default:
+                        throw "Unknown operator: " + token;
+                }
+            }
+        });
+
+        if (stack.length !== 1) {
+            throw "Invalid expression";
+        }
+
+        result = stack.pop();
         document.getElementById("result").value = result;
-    } else {
+    } catch (error) {
         document.getElementById("result").value = "Error";
     }
 }
+
 
 
